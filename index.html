@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="postsList"> </div>
+<script src="golos.min.js"></script>
+<script>
+//    steem.api.streamOperations(function(err, operations) {
+//        if (err) {
+//            document.write('Error:', err.message);
+//            return;
+//        }
+//
+//        operations.forEach(function (operation) {
+//            document.write('New operation:', JSON.stringify(operation));
+//            console.log('New operation:', operation);
+//            document.write('<br />');
+//        });
+//    });
+//    var query = {};
+//    query.select_tags = ['ru--golos', 'ru--spam'];
+//    query.limit = 100;
+//console.log(query);
+//    query.select_authors = ['ru--golos'];
+//    var query = {'limit': 100};
+//    steem.api.getDiscussionsByCreated(query, function(err, result) {
+//        console.log(err, result);
+//    });
+//
+
+    function Page() {
+        this.posts = {};
+        this.tags = {};
+    }
+
+    var Page = new Page();
+
+    Page.getApiData = function (query) {
+        console.log('getApiData');
+        return steem.api.getDiscussionsByCreated(query, function(err, result) {
+            console.log(err, result);
+            if (err) {
+//                this.getApiData(query);
+                return;
+            }
+
+            result.forEach(function (post) {
+                if(typeof(Page.posts.all)== 'undefined') {
+                    Page.posts.all = {};
+                    Page.posts.all.posts = {};
+                }
+                Page.posts.all.posts[post.url] = post;
+//                console.log(Page.posts);
+                if(typeof(Page.posts[post.category]) == 'undefined') {
+                    Page.posts[post.category] = {};
+                    Page.posts[post.category].posts = {};
+                }
+                Page.posts[post.category].posts[post.url] = post.url;
+//                console.log(Page.posts);
+            });
+
+            console.log(Page.posts);
+            Page.updatePageContent();
+
+            if (result.length == query.limit) {
+                var last = result[query.limit - 1];
+                var last = result[query.limit - 1];
+                query.start_author = last.author;
+                query.start_permlink = last.permlink;
+                console.log(query.start_author);
+                console.log(query.start_permlink);
+
+                Page.getApiData(query);
+            }
+        });
+    }
+
+    Page.updatePageContent = function() {
+        console.log('updatePageContent');
+        var divList = document.getElementById('postsList');
+        divList.innerHTML = '';
+
+        console.log(Page.posts.all);
+        for (var key in Page.posts.all.posts) {
+            var div = document.createElement("div");
+            var textnode = document.createTextNode(Page.posts.all.posts[key].url);
+            div.appendChild(textnode);
+            divList.appendChild(div);
+        }
+    }
+
+    Page.init = function() {
+        console.log('init');
+        var query = {};
+        query.select_tags = ['ru--golos'];
+        query.limit = 10;
+
+        var result = Page.getApiData(query);
+    }
+
+    Page.init();
+</script>
+</body>
+</html>
