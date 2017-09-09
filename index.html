@@ -56,7 +56,7 @@
 //                console.log(query.start_author);
 //                console.log(query.start_permlink);
 
-                Page.getApiData(query, true);
+//                Page.getApiData(query, true);
             }
         });
     }
@@ -92,7 +92,7 @@
             var img = document.createElement("img");
             var src = '';
             if (meta !== null && typeof(meta.image) !== 'undefined'){
-                src = meta.image;
+                src = 'https://imgp.golos.io/256x256/' + meta.image;
             }
             img.setAttribute("src", 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
             img.setAttribute("data-src", src);
@@ -186,7 +186,7 @@
         console.log('init');
         var query = {};
         query.select_tags = ['ru--golos'];
-        query.limit = 15;
+        query.limit = 55;
 
         Page.getApiData(query, false);
     }
