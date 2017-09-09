@@ -5,31 +5,10 @@
     <title>Title</title>
 </head>
 <body>
-<div id="postsList"> </div>
+<div id="tagsList" style="float: right; width: 200px;"> </div>
+<div id="postsList" style="margin-right: 220px;"> </div>
 <script src="golos.min.js"></script>
 <script>
-//    steem.api.streamOperations(function(err, operations) {
-//        if (err) {
-//            document.write('Error:', err.message);
-//            return;
-//        }
-//
-//        operations.forEach(function (operation) {
-//            document.write('New operation:', JSON.stringify(operation));
-//            console.log('New operation:', operation);
-//            document.write('<br />');
-//        });
-//    });
-//    var query = {};
-//    query.select_tags = ['ru--golos', 'ru--spam'];
-//    query.limit = 100;
-//console.log(query);
-//    query.select_authors = ['ru--golos'];
-//    var query = {'limit': 100};
-//    steem.api.getDiscussionsByCreated(query, function(err, result) {
-//        console.log(err, result);
-//    });
-//
 
     function Page() {
         this.posts = {};
@@ -64,6 +43,7 @@
 
             console.log(Page.posts);
             Page.updatePageContent();
+            Page.updateTagsList();
 
             if (result.length == query.limit) {
                 var last = result[query.limit - 1];
@@ -73,7 +53,7 @@
                 console.log(query.start_author);
                 console.log(query.start_permlink);
 
-                Page.getApiData(query);
+//                Page.getApiData(query);
             }
         });
     }
@@ -85,9 +65,56 @@
 
         console.log(Page.posts.all);
         for (var key in Page.posts.all.posts) {
+            var post = Page.posts.all.posts[key];
+            var meta = null;
+            if (post.json_metadata.length){
+                meta = JSON.parse(post.json_metadata);
+            }
             var div = document.createElement("div");
-            var textnode = document.createTextNode(Page.posts.all.posts[key].url);
+            div.style["width"] = '130px';
+            div.style["overflow"] = 'hidden';
+            div.style["display"] = 'inline-block';
+
+            var p = document.createElement("p");
+            var textnode = document.createTextNode(post.title);
+            p.style["max-width"] = '100px';
+            p.appendChild(textnode);
+            div.appendChild(p);
+
+            var img = document.createElement("img");
+            var src = '';
+            if (meta !== null && typeof(meta.image) !== 'undefined'){
+                src = meta.image;
+            }
+            img.setAttribute("src", src);
+            img.setAttribute("height", '100px');
+            img.style["max-width"] = '100px';
+//            img.style["merge-left"] = 'auto';
+            div.appendChild(img);
+
+            divList.appendChild(div);
+        }
+    }
+
+    Page.updateTagsList = function() {
+        console.log('updateTagsList');
+        var divList = document.getElementById('tagsList');
+        divList.innerHTML = '';
+
+        console.log(Page.posts);
+        for (var key in Page.posts) {
+            var list = Page.posts[key].posts;
+            console.log(list);
+            var tagName = (key === 'all' ? key : ('#' + key)) + '(' + Object.keys(list).length + ')';
+
+            var div = document.createElement("div");
+//            div.style["width"] = '130px';
+            div.style["overflow"] = 'hidden';
+//            div.style["display"] = 'inline-block';
+
+            var textnode = document.createTextNode(tagName);
             div.appendChild(textnode);
+
             divList.appendChild(div);
         }
     }
@@ -96,7 +123,7 @@
         console.log('init');
         var query = {};
         query.select_tags = ['ru--golos'];
-        query.limit = 10;
+        query.limit = 50;
 
         var result = Page.getApiData(query);
     }
