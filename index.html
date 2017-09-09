@@ -17,7 +17,7 @@
 
     var Page = new Page();
 
-    Page.getApiData = function (query) {
+    Page.getApiData = function (query, skipFirst) {
         console.log('getApiData');
         return steem.api.getDiscussionsByCreated(query, function(err, result) {
             console.log(err, result);
@@ -45,7 +45,7 @@
             });
 
             console.log(Page.posts);
-            Page.updatePageContent();
+            Page.updatePageContent(result, skipFirst);
             Page.updateTagsList();
             Page.showVisibleImg();
 
@@ -56,21 +56,25 @@
 //                console.log(query.start_author);
 //                console.log(query.start_permlink);
 
-//                Page.getApiData(query);
+                Page.getApiData(query, true);
             }
         });
     }
 
-    Page.updatePageContent = function() {
+    Page.updatePageContent = function(added, skipFirst) {
         console.log('updatePageContent');
         var divList = document.getElementById('postsList');
-        divList.innerHTML = '';
+//        divList.innerHTML = '';
 
         var hash = window.location.hash.substring(1);
 
-        console.log(Page.posts.all);
-        for (var key in Page.posts.all.posts) {
-            var post = Page.posts.all.posts[key];
+        console.log(added);
+        for (var key in added) {
+            console.log('key', skipFirst);
+            if (skipFirst && key === '0') {
+                continue;
+            }
+            var post = added[key];
             var meta = JSON.parse(post.json_metadata);
 
             var div = document.createElement("div");
@@ -182,9 +186,9 @@
         console.log('init');
         var query = {};
         query.select_tags = ['ru--golos'];
-        query.limit = 50;
+        query.limit = 15;
 
-        Page.getApiData(query);
+        Page.getApiData(query, false);
     }
 
     console.log(window.location.hash);
