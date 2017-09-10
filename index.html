@@ -151,7 +151,8 @@
         overflow: hidden;
         /*style="float: right; ;"*/
     }
-    #tagsList .text-tag
+    #tagsList .text-tag,
+    #postsList .text-tag
     {
         color: #6a6a6a;
         font-size: 18px;
@@ -439,6 +440,16 @@
         p.setAttribute("class", "post-head-text");
 //            p.style["text-align"] = 'center';
         p.appendChild(textnode);
+        postDiv.appendChild(p);
+
+        var p = document.createElement("p");
+        var meta = JSON.parse(post.json_metadata);
+        meta.tags.forEach(function(tag) {
+            var tagName = '   #' + tags_convert(tag, 'ru');
+            var textnode = document.createTextNode(tagName);
+            p.appendChild(textnode);
+        });
+        p.setAttribute("class", "text-tag");
         postDiv.appendChild(p);
 
 
