@@ -5,8 +5,144 @@
     <title>Title</title>
 </head>
 <body>
-<div id="tagsList" style="float: right; width: 200px;"> </div>
-<div id="postsList" style="margin-right: 220px;"> </div>
+<style type='text/css'>
+    body {
+        font-family: MicrosoftSansSerif;
+    }
+    #postsList,
+    #headerList
+    {
+        margin-left: 60px;
+    }
+    #postsList
+    {
+        margin-right: 220px;
+        vertical-align: top;
+    }
+    #postsList
+    {
+        margin-right: 220px;
+        vertical-align: top;
+    }
+    #postsList .icon .icon-text
+    {
+        color: #4990e2;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        text-align: center;
+        padding-right: 5px;
+        padding-left: 5px;
+        height: 60px;
+    }
+    #postsList .icon .icon-img
+    {
+        height: 256px;
+    }
+    #postsList .icon .close-text
+    {
+        display: none;
+    }
+    #postsList .icon .icon-img-div
+    {
+        /*border: solid 1px #979797;*/
+        width: 220px;
+        height: 256px;
+        overflow: hidden;
+    }
+    #postsList .icon
+    {
+        width: 220px;
+        margin-right: 32px;
+        margin-bottom: 70px;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    #postsList.active
+    {
+        width: 0px;
+        height: 0px;
+        overflow: hidden;
+    }
+    #tagsList.active
+    {
+        width: 0px;
+        height: 0px;
+        overflow: hidden;
+    }
+    #postsList .icon-active
+    {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        z-index: 100;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        /*background-color: aliceblue;*/
+    }
+    #postsList .icon-active .icon-img-div
+    {
+        display: none;
+    }
+    #postsList .icon-active .close-text
+    {
+        display: block;
+        cursor: pointer;
+        position: fixed;
+        top: 50px;
+        right: 50px;
+    }
+
+    #tagsList
+    {
+        position: fixed;
+        top: 0px;
+        right: 0px;
+        width: 200px;
+        height: 100%;
+        overflow: hidden;
+        /*style="float: right; ;"*/
+    }
+    #tagsList .text-tag
+    {
+        color: #6a6a6a;
+        font-size: 18px;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    #tagsList
+    {
+        margin-top: 120px;
+    }
+
+    #headerList
+    {
+        height: 120px;
+        width: 100%;
+    }
+
+    #headerList.active-post
+    {
+        width: 0px;
+        height: 0px;
+        overflow: hidden;
+    }
+
+    #headerText
+    {
+        padding-top: 62px;
+        color: #6a6a6a;
+        font-size: 16px;
+        font-weight: bold;
+    }
+</style>
+<div id="tagsList"> </div>
+<div id="headerList">
+    <p id="headerText"> </p>
+</div>
+<div id="postsList"> </div>
 <script src="golos.min.js"></script>
 <script>
 
@@ -45,6 +181,7 @@
             });
 
             console.log(Page.posts);
+            Page.updatePageHeader();
             Page.updatePageContent(result, skipFirst);
             Page.updateTagsList();
             Page.showVisibleImg();
@@ -59,6 +196,15 @@
 //                Page.getApiData(query, true);
             }
         });
+    }
+
+    Page.updatePageHeader = function() {
+        console.log('updatePageHeader');
+
+        var hash = window.location.hash.substring(1);
+
+        var divList = document.getElementById('headerText');
+        divList.innerHTML = hash === '' ? 'all' : hash;
     }
 
     Page.updatePageContent = function(added, skipFirst) {
@@ -78,14 +224,21 @@
             var meta = JSON.parse(post.json_metadata);
 
             var div = document.createElement("div");
+            div.addEventListener('click', Page.ShowPost);
             div.setAttribute("id", post.id);
-            div.style["width"] = '130px';
-            div.style["overflow"] = 'hidden';
+            div.setAttribute("class", "icon");
+//            div.style["width"] = '220px';
+//            div.style["margin-left"] = '32px';
+//            div.style["overflow"] = 'hidden';
             div.style["display"] = meta.tags.indexOf(hash) > -1 || hash === 'all' || hash === '' ? 'inline-block' : 'none';
 
             var p = document.createElement("p");
-            var textnode = document.createTextNode(post.title);
-            p.style["max-width"] = '100px';
+            var textnode = document.createTextNode('X');
+            p.setAttribute("class", "close-text");
+            p.addEventListener('click', Page.hidePost);
+            p.style["float"] = 'right';
+//            p.style["padding-left"] = '5px';
+//            p.style["padding-right"] = '5px';
             p.appendChild(textnode);
             div.appendChild(p);
 
@@ -94,12 +247,26 @@
             if (meta !== null && typeof(meta.image) !== 'undefined'){
                 src = 'https://imgp.golos.io/256x256/' + meta.image;
             }
+//            img.setAttribute("id", 'img-' + post.id);
+            img.setAttribute("class", "icon-img");
             img.setAttribute("src", 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
             img.setAttribute("data-src", src);
-            img.setAttribute("height", '100px');
-            img.style["max-width"] = '100px';
+//            img.setAttribute("height", '220px');
+//            img.style["max-width"] = '220px';
 //            img.style["merge-left"] = 'auto';
-            div.appendChild(img);
+            var imgDiv = document.createElement("div");
+            imgDiv.appendChild(img);
+            imgDiv.setAttribute("class", "icon-img-div");
+            div.appendChild(imgDiv);
+
+            var p = document.createElement("p");
+            var textnode = document.createTextNode(post.title);
+            p.setAttribute("class", "icon-text");
+//            p.style["text-align"] = 'center';
+//            p.style["padding-left"] = '5px';
+//            p.style["padding-right"] = '5px';
+            p.appendChild(textnode);
+            div.appendChild(p);
 
             divList.appendChild(div);
         }
@@ -122,6 +289,7 @@
 //            div.style["display"] = 'inline-block';
 
             var a = document.createElement("a");
+            a.setAttribute("class", 'text-tag');
             a.setAttribute("href", '#' + key);
             var textnode = document.createTextNode(tagName);
             a.appendChild(textnode);
@@ -182,6 +350,48 @@
         }
     }
 
+    Page.ShowPost = function(event) {
+        console.log('ShowPost');
+        if (event.target.getAttribute('class') === 'close-text') {
+            return;
+        }
+        var parent = event.target.parentNode;
+        var divId = parent.getAttribute('id');
+        if (divId === null) {
+            parent = parent.parentNode;
+            divId = parent.getAttribute('id');
+        }
+        console.log(divId);
+        var div = document.getElementById(divId);
+        div.setAttribute("class", "icon-active");
+        var divList = document.getElementById('postsList');
+        divList.setAttribute("class", "active");
+        var tagsList = document.getElementById('tagsList');
+        tagsList.setAttribute("class", "active");
+        var tagsList = document.getElementById('headerList');
+        tagsList.setAttribute("class", "active-post");
+    }
+
+    Page.hidePost = function(event) {
+        console.log('hidePost');
+        event.preventDefault();
+        var parent = event.target.parentNode;
+        var divId = parent.getAttribute('id');
+//        if (divId === null) {
+//            parent = parent.parentNode;
+//            divId = parent.getAttribute('id');
+//        }
+        console.log(divId);
+        var div = document.getElementById(divId);
+        div.setAttribute("class", "icon");
+        var divList = document.getElementById('postsList');
+        divList.setAttribute("class", "");
+        var tagsList = document.getElementById('tagsList');
+        tagsList.setAttribute("class", "");
+        var tagsList = document.getElementById('headerList');
+        tagsList.setAttribute("class", "");
+    }
+
     Page.init = function() {
         console.log('init');
         var query = {};
@@ -198,6 +408,7 @@
     window.onhashchange = function () {
         console.log('onhashchange');
         var hash = window.location.hash.substring(1);
+        Page.updatePageHeader();
         Page.showPostsByTag(hash);
         Page.showVisibleImg();
     }
