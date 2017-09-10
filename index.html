@@ -10,14 +10,16 @@
         font-family: MicrosoftSansSerif;
     }
     #postsList,
-    #headerList
+    #headerList,
+    #postsList .icon-active
     {
         margin-left: 60px;
     }
-    #postsList
+    #postsList,
+    #postsList .icon-active,
+    #postsList .icon-active .close-text
     {
         margin-right: 220px;
-        vertical-align: top;
     }
     #postsList
     {
@@ -39,7 +41,8 @@
     {
         height: 256px;
     }
-    #postsList .icon .close-text
+    #postsList .icon .close-text,
+    #postsList .icon .show-post
     {
         display: none;
     }
@@ -75,27 +78,50 @@
         position: absolute;
         top: 0px;
         left: 0px;
-        z-index: 100;
-        width: 100%;
-        height: 100%;
+        /*z-index: 100;*/
+        /*width: 100%;*/
+        min-height: 100%;
         overflow: hidden;
         /*background-color: aliceblue;*/
     }
-    #postsList .icon-active .icon-img-div
+    #postsList .icon-active .post-head-text
+    {
+        font-size: 33px;
+        letter-spacing: 0.5px;
+        text-align: justify;
+        font-weight: 500;
+        color: #424242;
+    }
+    #postsList .icon-active .icon-img-div,
+    #postsList .icon-active .icon-text
     {
         display: none;
     }
-    #postsList .icon-active .close-text
+    #postsList .icon-active .close-text,
+    #postsList .icon-active .show-post
     {
         display: block;
+    }
+    #postsList .icon-active .close-text
+    {
         cursor: pointer;
         position: fixed;
-        top: 50px;
-        right: 50px;
+        top: 0px;
+        right: 20px;
+    }
+    #postsList .icon-active .post-likes
+    {
+        color: #4990e2;
+        font-size: 18px;
+    }
+    #postsList .icon-active .post-text
+    {
+
     }
 
     #tagsList
     {
+        z-index: 100;
         position: fixed;
         top: 0px;
         right: 0px;
@@ -112,15 +138,23 @@
         text-decoration: none;
     }
 
-    #tagsList
+    #tagsList,
+    #postsList,
+    #postsList .icon-active,
+    #postsList .icon-active .close-text
     {
         margin-top: 120px;
     }
 
     #headerList
     {
+        z-index: 80;
+        position: fixed;
+        top: 0px;
+        right: 0px;
         height: 120px;
         width: 100%;
+        background-color: white;
     }
 
     #headerList.active-post
@@ -136,6 +170,7 @@
         color: #6a6a6a;
         font-size: 16px;
         font-weight: bold;
+        padding-left: 60px;
     }
 </style>
 <div id="tagsList"> </div>
@@ -204,7 +239,7 @@
         var hash = window.location.hash.substring(1);
 
         var divList = document.getElementById('headerText');
-        divList.innerHTML = hash === '' ? 'all' : hash;
+        divList.innerHTML = hash === '' || hash === 'all' ? 'Все' : tags_convert(hash);
     }
 
     Page.updatePageContent = function(added, skipFirst) {
@@ -268,6 +303,11 @@
             p.appendChild(textnode);
             div.appendChild(p);
 
+            var divPost = document.createElement("div");
+            divPost.setAttribute("id", 'show-' + post.id);
+            divPost.setAttribute("class", "show-post");
+            div.appendChild(divPost);
+
             divList.appendChild(div);
         }
     }
@@ -281,7 +321,7 @@
         for (var key in Page.posts) {
             var list = Page.posts[key].posts;
 //            console.log(list);
-            var tagName = (key === 'all' ? key : ('#' + key)) + '(' + Object.keys(list).length + ')';
+            var tagName = (key === 'all' ? 'Все' : ('#' + tags_convert(key, 'ru'))) + '(' + Object.keys(list).length + ')';
 
             var div = document.createElement("div");
 //            div.style["width"] = '130px';
@@ -366,30 +406,67 @@
         div.setAttribute("class", "icon-active");
         var divList = document.getElementById('postsList');
         divList.setAttribute("class", "active");
-        var tagsList = document.getElementById('tagsList');
-        tagsList.setAttribute("class", "active");
-        var tagsList = document.getElementById('headerList');
-        tagsList.setAttribute("class", "active-post");
+
+
+        var post = Page.posts.all.posts[divId];
+        var postDiv = document.getElementById('show-' + divId);
+
+        var p = document.createElement("p");
+        var textnode = document.createTextNode(post.title);
+        p.setAttribute("class", "post-head-text");
+//            p.style["text-align"] = 'center';
+        p.appendChild(textnode);
+        postDiv.appendChild(p);
+
+
+
+        var divHeadLike = document.createElement("div");
+        var p = document.createElement("p");
+        p.setAttribute("class", "post-likes");
+        var textnode = document.createTextNode(post.net_votes + ' ✪');
+        p.appendChild(textnode);
+//        var img = document.createElement("img");
+//        var src = 'https://imgp.golos.io/18x18/https://habrastorage.org/web/ee4/d36/b41/ee4d36b41d3d48cd8b3c7775d28cc817.png';
+//        img.setAttribute("src", src);
+//        p.appendChild(img);
+        divHeadLike.appendChild(p);
+        postDiv.appendChild(divHeadLike);
+
+        var p = document.createElement("p");
+        p.innerHTML = post.body;
+//        var textnode = document.createTextNode(post.body);
+        p.setAttribute("class", "post-text");
+//            p.style["text-align"] = 'center';
+//        p.appendChild(textnode);
+        postDiv.appendChild(p);
+
+
+        document.body.scrollTop = document.documentElement.scrollTop = 0;
     }
 
     Page.hidePost = function(event) {
         console.log('hidePost');
-        event.preventDefault();
-        var parent = event.target.parentNode;
-        var divId = parent.getAttribute('id');
-//        if (divId === null) {
-//            parent = parent.parentNode;
-//            divId = parent.getAttribute('id');
-//        }
-        console.log(divId);
-        var div = document.getElementById(divId);
-        div.setAttribute("class", "icon");
+
+        var elements = document.getElementsByClassName('icon-active');
+
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].setAttribute("class", "icon");
+        }
+//        console.log(document.getElementsByClassName('icon-active'));
+//        document.getElementsByClassName('icon-active').forEach(
+//            function (div) {
+//                div.setAttribute("class", "icon");
+//            }
+//        );
+
         var divList = document.getElementById('postsList');
         divList.setAttribute("class", "");
-        var tagsList = document.getElementById('tagsList');
-        tagsList.setAttribute("class", "");
-        var tagsList = document.getElementById('headerList');
-        tagsList.setAttribute("class", "");
+//        var tagsList = document.getElementById('tagsList');
+//        tagsList.setAttribute("class", "");
+//        var tagsList = document.getElementById('headerList');
+//        tagsList.setAttribute("class", "");
+        var postDiv = document.getElementById('show-' + divId);
+        postDiv.innerHTML = '';
     }
 
     Page.init = function() {
@@ -411,7 +488,28 @@
         Page.updatePageHeader();
         Page.showPostsByTag(hash);
         Page.showVisibleImg();
+        var event = {};
+        document.getElementsByClassName('article');
+        Page.hidePost(event);
     }
+
+
+
+    function tags_convert(tag) {
+        if (tag.indexOf('ru--') > -1) {
+            tag = tag.replace('ru--', '');
+            for(var i=0; i<arren.length; i++){
+                var reg = new RegExp(arren[i], "g");
+                tag = tag.replace(reg, arrru[i]);
+            }
+        }
+
+        return tag;
+    }
+
+
+    var arrru = new Array ('Я','я','Ю','ю','Ч','ч','Ш','ш','Щ','щ','Ж','ж','А','а','Б','б','В','в','Г','г','Д','д','Е','е','Ё','ё','З','з','И','и','Й','й','К','к','Л','л','М','м','Н','н', 'О','о','П','п','Р','р','С','с','Т','т','У','у','Ф','ф','Х','х','Ц','ц','Ы','ы','Ь','ь','Ъ','ъ','Э','э');
+    var arren = new Array ('Ya','ya','Yu','yu','Ch','ch','Sh','sh','Sh','sh','Zh','zh','A','a','B','b','V','v','G','g','D','d','E','e','E','e','Z','z','I','i','J','j','K','k','L','l','M','m','N','n', 'O','o','P','p','R','r','S','s','T','t','U','u','F','f','H','h','C','c','Y','y','`','`','\'','\'','E', 'e');
 </script>
 </body>
 </html>
