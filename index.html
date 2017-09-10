@@ -450,7 +450,11 @@
         var elements = document.getElementsByClassName('icon-active');
 
         for (var i = 0; i < elements.length; i++) {
-            elements[i].setAttribute("class", "icon");
+            var  div = elements[i];
+            div.setAttribute("class", "icon");
+            var divId = div.getAttribute('id');
+            var postDiv = document.getElementById('show-' + divId);
+            postDiv.innerHTML = '';
         }
 //        console.log(document.getElementsByClassName('icon-active'));
 //        document.getElementsByClassName('icon-active').forEach(
