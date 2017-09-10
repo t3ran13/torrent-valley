@@ -78,6 +78,7 @@
         position: absolute;
         top: 0px;
         left: 0px;
+        padding-right: 25px;
         /*z-index: 100;*/
         /*width: 100%;*/
         min-height: 100%;
@@ -107,16 +108,36 @@
         cursor: pointer;
         position: fixed;
         top: 0px;
-        right: 20px;
+        right: 15px;
     }
     #postsList .icon-active .post-likes
     {
         color: #4990e2;
         font-size: 18px;
     }
+    #postsList .icon-active .magnet-link
+    {
+        background-color: red;
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+        text-decoration: none;
+        margin-left: 30px;
+        padding: 2px 10px;
+        border-radius: 12px;
+    }
+    #postsList .icon-active .thx-link
+    {
+        font-weight: bold;
+        font-size: 18px;
+        text-decoration: none;
+        margin-left: 30px;
+        padding: 2px 10px;
+        border-radius: 12px;
+    }
     #postsList .icon-active .post-text
     {
-
+        overflow: hidden;
     }
 
     #tagsList
@@ -179,6 +200,7 @@
 </div>
 <div id="postsList"> </div>
 <script src="golos.min.js"></script>
+<script src="marked.js"></script>
 <script>
 
     function Page() {
@@ -407,6 +429,7 @@
         var divList = document.getElementById('postsList');
         divList.setAttribute("class", "active");
 
+        div.removeEventListener('click', Page.ShowPost);
 
         var post = Page.posts.all.posts[divId];
         var postDiv = document.getElementById('show-' + divId);
@@ -423,6 +446,7 @@
         var divHeadLike = document.createElement("div");
         var p = document.createElement("p");
         p.setAttribute("class", "post-likes");
+        p.style["display"] = "inline-block";
         var textnode = document.createTextNode(post.net_votes + ' ✪');
         p.appendChild(textnode);
 //        var img = document.createElement("img");
@@ -430,10 +454,29 @@
 //        img.setAttribute("src", src);
 //        p.appendChild(img);
         divHeadLike.appendChild(p);
+        var magnetLinks = /(magnet:\?[^\s\"\n\r]*)/gmi.exec(post.body);
+        console.log(magnetLinks);
+        if (magnetLinks !== null && magnetLinks[0].length) {
+            console.log(magnetLinks[0]);
+            var aMagnet = document.createElement("a");
+            aMagnet.setAttribute("class", "magnet-link");
+            aMagnet.setAttribute("href", magnetLinks[0]);
+            aMagnet.setAttribute("target", "_blank");
+            var textnode = document.createTextNode('Magnet ссылка');
+            aMagnet.appendChild(textnode);
+            divHeadLike.appendChild(aMagnet);
+        }
+        var aThx = document.createElement("a");
+        aThx.setAttribute("class", "thx-link");
+        aThx.setAttribute("href", 'https://golos.io' + post.url);
+        aThx.setAttribute("target", "_blank");
+        var textnode = document.createTextNode('Сказать спасибо');
+        aThx.appendChild(textnode);
+        divHeadLike.appendChild(aThx);
         postDiv.appendChild(divHeadLike);
 
-        var p = document.createElement("p");
-        p.innerHTML = post.body;
+        var p = document.createElement("div");
+        p.innerHTML = marked(post.body);
 //        var textnode = document.createTextNode(post.body);
         p.setAttribute("class", "post-text");
 //            p.style["text-align"] = 'center';
@@ -452,6 +495,7 @@
         for (var i = 0; i < elements.length; i++) {
             var  div = elements[i];
             div.setAttribute("class", "icon");
+            div.addEventListener('click', Page.ShowPost);
             var divId = div.getAttribute('id');
             var postDiv = document.getElementById('show-' + divId);
             postDiv.innerHTML = '';
@@ -476,8 +520,8 @@
     Page.init = function() {
         console.log('init');
         var query = {};
-        query.select_tags = ['ru--golos'];
-        query.limit = 55;
+        query.select_tags = ['torrent'];
+        query.limit = 100;
 
         Page.getApiData(query, false);
     }
